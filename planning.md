@@ -9,7 +9,11 @@
 
 ## Domain
 
-<!-- What domain did you choose? Why is this knowledge valuable and hard to find through official channels? -->
+## Domain
+
+This project focuses on student reviews of Computer Science professors at Sonoma State University. While Rate My Professors provides access to individual reviews, students often need to read dozens of reviews across multiple professor pages to answer questions about teaching style, workload, exam difficulty, grading practices, and feedback quality.
+
+This RAG system makes that information searchable through natural language questions and provides grounded summaries with source attribution. Instead of manually browsing reviews, students can ask questions such as "Which professors are considered beginner-friendly?" or "What do students say about Mark Gondree's exams?" and receive answers synthesized from the underlying reviews.
 
 ---
 
@@ -17,51 +21,69 @@
 
 <!-- List your specific sources: URLs, subreddit names, forum threads, or file descriptions.
      Aim for at least 10 sources that together cover different subtopics or perspectives within your domain. -->
-
-| # | Source | Description | URL or location |
-|---|--------|-------------|-----------------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| 6 | | | |
-| 7 | | | |
-| 8 | | | |
-| 9 | | | |
-| 10 | | | |
-
++----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
+| #  | Source                  | Description                                                  | URL                                                          |
++----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
+| 1  | Mark Gondree Reviews    | 24 student reviews discussing teaching style, exams,         | https://www.ratemyprofessors.com/professor/2222240           |
+|    |                         | workload, grading, and course experiences.                   |                                                              |
++----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
+| 2  | Lynn Stauffer Reviews   | 33 student reviews discussing teaching effectiveness,        | https://www.ratemyprofessors.com/professor/62597             |
+|    |                         | assignments, exams, and overall course satisfaction.         |                                                              |
++----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
+| 3  | Ali Kooshesh Reviews    | 46 student reviews covering lectures, grading practices,     | https://www.ratemyprofessors.com/professor/62598             |
+|    |                         | course difficulty, and student feedback.                     |                                                              |
++----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
+| 4  | Suzanne Rivoire Reviews | 32 student reviews describing workload, teaching quality,    | https://www.ratemyprofessors.com/professor/1213020           |
+|    |                         | exams, and learning outcomes.                                |                                                              |
++----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
+| 5  | Gurman Gill Reviews     | 23 student reviews discussing assignments, classroom         | https://www.ratemyprofessors.com/professor/2083075           |
+|    |                         | experience, and professor accessibility.                     |                                                              |
++----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
+| 6  | B. Ravikumar Reviews    | 38 student reviews focused on course rigor, grading          | https://www.ratemyprofessors.com/professor/62601             |
+|    |                         | standards, lecture quality, and exams.                       |                                                              |
++----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
+| 7  | Tia Watts Reviews       | 41 student reviews discussing communication style,           | https://www.ratemyprofessors.com/professor/62602             |
+|    |                         | workload, assignments, and teaching effectiveness.           |                                                              |
++----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
+| 8  | Glenn Carter Reviews    | 162 student reviews describing course structure, grading,    | https://www.ratemyprofessors.com/professor/25142             |
+|    |                         | exams, engagement, and long-term student experiences.        |                                                              |
++----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
+| 9  | Shubbhi Taneja Reviews  | 13 student reviews discussing responsiveness, workload,      | https://www.ratemyprofessors.com/professor/2484473           |
+|    |                         | teaching style, and learning outcomes.                       |                                                              |
++----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
+| 10 | Anamary Leal Reviews    | 11 student reviews focused on assignments, grading,          | https://www.ratemyprofessors.com/professor/2409598           |
+|    |                         | communication, and overall student experience.               |                                                              |
++----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
 ---
 
 ## Chunking Strategy
 
-<!-- How will you split documents into chunks?
-     State your chunk size (in tokens or characters), overlap size, and explain why those
-     numbers fit the structure of your documents.
-     A review-heavy corpus warrants different chunking than a long FAQ. -->
+The documents in this project are Rate My Professors pages, and the main useful content is made up of short student reviews. Because each review usually represents one complete student opinion, I will split the documents so that each individual review becomes one chunk.
 
-**Chunk size:**
+Chunk size:
 
-**Overlap:**
+One student review per chunk
 
-**Reasoning:**
+Overlap size:
+
+0 overlap
+
+This strategy fits the structure of the documents because the reviews are already short and self-contained. Splitting by a fixed character count could cut a review in the middle of an important thought, which would make the chunk harder to understand during retrieval. Combining multiple reviews into one larger chunk could mix different opinions about exams, workload, grading, and teaching style, which would make semantic search less precise.
+
+Using one review per chunk should make retrieval more targeted. For example, if a user asks about exam difficulty, the system can retrieve specific reviews that mention exams instead of pulling in large sections containing unrelated comments.
 
 ---
 
 ## Retrieval Approach
 
-<!-- Which embedding model are you using (e.g., all-MiniLM-L6-v2 via sentence-transformers)?
-     How many chunks will you retrieve per query (top-k)?
-     If you were deploying this for real users and cost wasn't a constraint, what tradeoffs
-     would you weigh in choosing a different embedding model — context length, multilingual
-     support, accuracy on domain-specific text, latency? -->
-
 **Embedding model:**
+I will use `all-MiniLM-L6-v2` through the `sentence-transformers` library. This model runs locally, does not require paid API credits, and is recommended for this project.
 
 **Top-k:**
+I will retrieve the top 5 most relevant chunks for each user query.
 
 **Production tradeoff reflection:**
-
+If I were deploying this system for real users and cost was not a constraint, I would compare different embedding models based on accuracy, context length, latency, and cost. A larger embedding model might capture more subtle meaning in student reviews, but it could be slower or more expensive. I would also consider whether the model handles informal student language well, since reviews may include slang, abbreviations, and inconsistent wording.
 ---
 
 ## Evaluation Plan
