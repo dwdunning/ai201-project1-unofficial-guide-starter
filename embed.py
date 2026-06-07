@@ -26,9 +26,21 @@ TOP_K = 5
 BATCH_SIZE = 100
 
 EVAL_QUERIES = [
-    "What do students say about CS340 with Mark Gondree?",
-    "What do students say about CS315 with Ali Kooshesh?",
-    "What complaints appear in reviews of Tia Watts's CS215 course?",
+    {
+        "query": "What do students say about CS340 with Mark Gondree?",
+        "professor_name": "Mark Gondree",
+        "course": "CS340",
+    },
+    {
+        "query": "What do students say about CS315 with Ali Kooshesh?",
+        "professor_name": "Ali Kooshesh",
+        "course": "CS315",
+    },
+    {
+        "query": "What complaints appear in reviews of Tia Watts's CS215 course?",
+        "professor_name": "Tia Watts",
+        "course": "CS215",
+    },
 ]
 
 
@@ -139,6 +151,8 @@ def retrieve(
     model: SentenceTransformer,
     query: str,
     top_k: int = TOP_K,
+    professor_name: str | None = None,
+    course: str | None = None,
 ) -> dict:
     """
     Embed the query string and return the top_k most similar chunks.
@@ -153,15 +167,44 @@ def retrieve(
       documents[0]  — the original review texts
       metadatas[0]  — the metadata dicts stored alongside each document
       distances[0]  — cosine distances (lower means more similar)
+
+    Optional metadata filters:
+      professor_name — restrict results to one professor
+      course         — restrict results to one course number
+
+    ChromaDB where filter syntax:
+      A single condition is {"field": {"$eq": value}}.
+      Two conditions are combined with {"$and": [cond1, cond2]}.
+      Passing no filters returns results from the full collection.
     """
     query_embedding = model.encode([query], normalize_embeddings=True)[0].tolist()
-    return collection.query(
-        query_embeddings=[query_embedding],
-        n_results=top_k,
-    )
+
+    conditions = []
+    if professor_name:
+        conditions.append({"professor_name": {"$eq": professor_name}})
+    if course:
+        conditions.append({"course": {"$eq": course}})
+
+    if len(conditions) == 0:
+        where = None
+    elif len(conditions) == 1:
+        where = conditions[0]
+    else:
+        where = {"$and": conditions}
+
+    kwargs = {"query_embeddings": [query_embedding], "n_results": top_k}
+    if where is not None:
+        kwargs["where"] = where
+
+    return collection.query(**kwargs)
 
 
-def print_results(query: str, results: dict) -> None:
+def print_results(
+    query: str,
+    results: dict,
+    professor_name: str | None = None,
+    course: str | None = None,
+) -> None:
     ids = results["ids"][0]
     docs = results["documents"][0]
     metas = results["metadatas"][0]
@@ -169,6 +212,12 @@ def print_results(query: str, results: dict) -> None:
 
     print(f"\n{'='*70}")
     print(f"QUERY: {query}")
+    active_filters = {k: v for k, v in [("professor", professor_name), ("course", course)] if v}
+    if active_filters:
+        filter_str = "  |  ".join(f"{k}={v}" for k, v in active_filters.items())
+        print(f"FILTER: {filter_str}")
+    else:
+        print("FILTER: none (full collection search)")
     print("=" * 70)
     for rank, (chunk_id, doc, meta, dist) in enumerate(
         zip(ids, docs, metas, distances), start=1
@@ -199,9 +248,15 @@ def main() -> None:
     os.makedirs(CHROMA_DIR, exist_ok=True)
     collection = build_vector_store(chunks, model)
 
-    for query in EVAL_QUERIES:
-        results = retrieve(collection, model, query)
-        print_results(query, results)
+    for item in EVAL_QUERIES:
+        results = retrieve(
+            collection, model, item["query"],
+            professor_name=item.get("professor_name"),
+            course=item.get("course"),
+        )
+        print_results(item["query"], results,
+                      professor_name=item.get("professor_name"),
+                      course=item.get("course"))
 
 
 if __name__ == "__main__":

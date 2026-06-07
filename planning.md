@@ -205,8 +205,94 @@ Only after that analysis should you implement the ingestion/chunking pipeline.
 After confirming that Claude understood my instructions I had it write ingest.py
 After running it I had to add functions to clean the text and normalize course numbers.
 
-lastly I asked it to copy 5 random chunks to a new file to spot check.
+I asked it to copy 5 random chunks to a new file to spot check.
  
+for embedding I asked "Before writing code, read:
+
+1. `planning.md`
+2. `ingest.py`
+3. `data/processed/chunks.json`
+4. The existing repository structure
+
+I am now working on Milestone 4: Embeddings and Retrieval.
+
+Your task is to implement only the embedding, vector store, and retrieval testing layer. Do not build generation, Groq, Gradio, or the final UI yet.
+
+Project context:
+
+* Milestone 3 produced `data/processed/chunks.json`.
+* Each chunk has `text` plus metadata like `chunk_id`, `professor_name`, `course`, `source_file`, `date`, `difficulty_rating`, `helpful_rating`, and `rating_tags`.
+* The planned embedding model is `all-MiniLM-L6-v2` using `sentence-transformers`.
+* The planned vector store is ChromaDB.
+* Retrieval should use top-k = 5.
+
+Architecture for this milestone:
+Document Ingestion → Chunking → Embedding with `all-MiniLM-L6-v2` → ChromaDB Vector Store → Top-5 Retrieval
+
+Requirements:
+
+1. Load chunks from `data/processed/chunks.json`.
+2. Embed each chunk's `text` using `SentenceTransformer("all-MiniLM-L6-v2")`.
+3. Store embeddings in ChromaDB with:
+
+   * document text
+   * unique chunk id
+   * metadata needed for source attribution
+4. Create or update a persistent ChromaDB database, preferably under `data/chroma_db/`.
+5. Implement a retrieval function that accepts a query string and returns the top 5 most relevant chunks.
+6. Print each result with:
+
+   * rank
+   * distance score
+   * professor name
+   * course
+   * source file
+   * chunk id
+   * review text
+7. Add a simple test script or CLI that runs at least these three evaluation queries:
+
+   * What do students say about CS340 with Mark Gondree?
+   * What do students say about CS315 with Ali Kooshesh?
+   * What complaints appear in reviews of Tia Watts's CS215 course?
+8. Keep the code simple and readable. I need to understand and explain it.
+9. If you use a ChromaDB API pattern that may be unfamiliar, explain what it does.
+
+Before writing code:
+
+1. Summarize your understanding of Milestone 4.
+2. Explain which files you plan to create or modify.
+3. Confirm that the code will not include LLM generation yet.
+4. Point out any assumptions or risks, especially around ChromaDB persistence or metadata types.
+
+Only after that analysis should you implement the embedding and retrieval code."
+
+Then I had to tweak it to use `normalize_embeddings=True` in both model.encode calls:
+1. When embedding all chunk texts.
+2. When embedding the query.
+
+Then I asked for it to include distances in the evaluation queries
+
+To try and resolve some of the retrieval errors, I asked Claude
+
+"Milestone 4 retrieval passes the checkpoint, but I want one small improvement before moving to generation.
+
+Please add optional metadata filtering to the retrieve() function.
+
+Requirements:
+- Keep the existing semantic-only retrieval behavior as the default.
+- Add optional parameters: professor_name=None and course=None.
+- If provided, pass a ChromaDB where filter using those metadata fields.
+- Update the three evaluation test calls:
+  1. Mark Gondree + CS340
+  2. Ali Kooshesh + CS315
+  3. Tia Watts + CS215
+- Print whether a metadata filter was used.
+- Do not add generation, Groq, or UI.
+
+Important:
+This should be a small extension, not a rewrite."
+
+
 
 **Milestone 3 — Ingestion and chunking:**
 
@@ -306,5 +392,63 @@ rating_tags — tags the reviewer selected """
 
 
 **Milestone 4 — Embedding and retrieval:**
+## Retrieval Test Results
+
+### Query 1
+
+**Query:** What do students say about CS340 with Mark Gondree?
+
+**Result:**
+Most of the retrieved chunks were reviews of Mark Gondree. Reviews described him as knowledgeable, helpful, caring, and enthusiastic about computer security. Several reviews specifically mentioned that CS340 was engaging because it aligned with his area of expertise.
+
+**Retrieval Quality:** Partially Accurate
+
+**Analysis:**
+The retrieval system correctly identified Mark Gondree as the target professor, but some highly ranked results discussed Gondree's other courses rather than CS340 specifically. This suggests the embedding model prioritized the professor identity more strongly than the course number.
+
+---
+
+### Query 2
+
+**Query:** What do students say about CS315 with Ali Kooshesh?
+
+**Result:**
+The retrieved reviews consistently described CS315 as challenging, demanding, and requiring significant effort. Students frequently recommended starting projects early, attending class, taking notes, and using office hours. Many reviews also described Kooshesh as knowledgeable and fair despite the course difficulty.
+
+**Retrieval Quality:** Accurate
+
+**Analysis:**
+This was the strongest retrieval result. The top results were specifically about CS315 and Ali Kooshesh, and all retrieved chunks came from Kooshesh reviews. The query produced the lowest distance scores of the evaluation set (top result distance: 0.3555, average top-5 distance: 0.4108).
+
+---
+
+### Query 3
+
+**Query:** What complaints appear in reviews of Tia Watts's CS215 course?
+
+**Result:**
+The retrieval system found reviews mentioning disorganization, slow grading, confusing labs, and unclear lectures. However, some retrieved chunks discussed complaints about other professors rather than Tia Watts.
+
+**Retrieval Quality:** Partially Accurate
+
+**Analysis:**
+The query retrieved complaint-oriented reviews, but semantic similarity sometimes outweighed professor identity. Because multiple professors received similar complaints, some non-Tia-Watts reviews appeared among the top results. This query had the highest distance scores in the evaluation set (top result distance: 0.4443, average top-5 distance: 0.4658).
+
+---
+
+### Retrieval Summary
+
+Retrieval was initially implemented using semantic similarity search only.
+While this generally returned relevant reviews, some queries that asked
+about a specific professor and course occasionally retrieved reviews from
+other professors with similar language.
+
+To improve precision, metadata filtering was added using professor name
+and course number. This allowed semantic search to operate within a
+smaller relevant subset of documents and significantly improved the
+accuracy of course-specific queries.
+
+
+
 
 **Milestone 5 — Generation and interface:**
