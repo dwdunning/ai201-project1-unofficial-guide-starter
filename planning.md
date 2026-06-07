@@ -65,16 +65,15 @@ If I were deploying this system for real users and cost was not a constraint, I 
 ---
 
 
-
 ## Evaluation Plan
 
 | # | Question | Expected Answer |
 |---|----------|-----------------|
-| 1 | What do students commonly say about Glenn Carter's teaching style? | Glenn Carter is frequently described as caring, enthusiastic, helpful, and passionate about teaching. Students often mention that he makes introductory computer science approachable and enjoyable. |
-| 2 | What concerns do students raise about Tia Watts? | Reviews are mixed. Positive reviews praise her knowledge and willingness to help, while negative reviews commonly mention disorganization, slow grading, unclear labs, and arriving late to class. |
-| 3 | What do students say about Ali Kooshesh's courses? | Students consistently describe his courses as challenging and demanding, but also describe him as knowledgeable, fair, and helpful when students seek assistance. |
-| 4 | Which professor receives the strongest praise for being caring and supportive of students? | Mark Gondree and Gurman Gill are frequently described as caring, supportive, accessible, and invested in student success. |
-| 5 | What complaints do students make about Anamary Leal's classes? | Reviews frequently mention unclear instruction, self-teaching requirements, poor communication, grading concerns, and difficulty connecting lectures to labs or assignments. |
+| 1 | What do students say about CS340 with Mark Gondree? | Students describe CS340 with Gondree as engaging and interesting, especially because security is his specialty. Reviews mention that lectures can be dense, but he makes them easier to get through with humor, helpful explanations, labs, and office hours. |
+| 2 | What do students say about CS315 with Ali Kooshesh? | Students describe CS315 with Kooshesh as difficult, demanding, and project-heavy. Many reviews say students need to start early, attend class, take notes, ask questions, and put in serious effort to succeed. |
+| 3 | What complaints appear in reviews of Tia Watts's CS215 course? | Complaints about CS215 with Watts include confusing or poorly written labs, disorganization, late grading, unclear lectures, and students feeling like they had to teach themselves parts of the material. |
+| 4 | What do students say about Glenn Carter's CS101 course? | Students commonly describe CS101 with Carter as approachable, helpful, and often easy if students attend, study, and complete the online/lab work. Reviews also mention that he is caring, enthusiastic, and supportive. |
+| 5 | What complaints appear in reviews of Anamary Leal's CS115 course? | Complaints about CS115 with Leal include unclear instruction, lectures not matching labs, heavy self-teaching, difficult tests, limited help, and poor communication. |
 
 ---
 
@@ -101,11 +100,51 @@ If I were deploying this system for real users and cost was not a constraint, I 
 
 ## Architecture
 
-<!-- Draw a diagram of your pipeline showing the five stages:
-     Document Ingestion → Chunking → Embedding + Vector Store → Retrieval → Generation
-     Label each stage with the tool or library you're using.
-     You can use ASCII art, a Mermaid diagram, or embed a sketch as an image.
-     You'll use this diagram as context when prompting AI tools to implement each stage. -->
+## Architecture
+
+```text
+┌─────────────────────┐
+│ Document Ingestion  │
+│ JSON Review Files   │
+│ (Rate My Professors)│
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Chunking            │
+│ One Review          │
+│ Per Chunk           │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Embedding           │
+│ all-MiniLM-L6-v2    │
+│ sentence-transformers│
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Vector Store        │
+│ ChromaDB            │
+│ + Metadata          │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Retrieval           │
+│ Top-5 Semantic      │
+│ Search Results      │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Generation          │
+│ Groq                │
+│ llama-3.3-70b       │
+└─────────────────────┘
+```
+
 
 ---
 
