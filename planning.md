@@ -9,7 +9,6 @@
 
 ## Domain
 
-## Domain
 
 This project focuses on student reviews of Computer Science professors at Sonoma State University. While Rate My Professors provides access to individual reviews, students often need to read dozens of reviews across multiple professor pages to answer questions about teaching style, workload, exam difficulty, grading practices, and feedback quality.
 
@@ -19,58 +18,36 @@ This RAG system makes that information searchable through natural language quest
 
 ## Documents
 
-<!-- List your specific sources: URLs, subreddit names, forum threads, or file descriptions.
-     Aim for at least 10 sources that together cover different subtopics or perspectives within your domain. -->
-+----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
-| #  | Source                  | Description                                                  | URL                                                          |
-+----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
-| 1  | Mark Gondree Reviews    | 24 student reviews discussing teaching style, exams,         | https://www.ratemyprofessors.com/professor/2222240           |
-|    |                         | workload, grading, and course experiences.                   |                                                              |
-+----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
-| 2  | Lynn Stauffer Reviews   | 33 student reviews discussing teaching effectiveness,        | https://www.ratemyprofessors.com/professor/62597             |
-|    |                         | assignments, exams, and overall course satisfaction.         |                                                              |
-+----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
-| 3  | Ali Kooshesh Reviews    | 46 student reviews covering lectures, grading practices,     | https://www.ratemyprofessors.com/professor/62598             |
-|    |                         | course difficulty, and student feedback.                     |                                                              |
-+----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
-| 4  | Suzanne Rivoire Reviews | 32 student reviews describing workload, teaching quality,    | https://www.ratemyprofessors.com/professor/1213020           |
-|    |                         | exams, and learning outcomes.                                |                                                              |
-+----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
-| 5  | Gurman Gill Reviews     | 23 student reviews discussing assignments, classroom         | https://www.ratemyprofessors.com/professor/2083075           |
-|    |                         | experience, and professor accessibility.                     |                                                              |
-+----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
-| 6  | B. Ravikumar Reviews    | 38 student reviews focused on course rigor, grading          | https://www.ratemyprofessors.com/professor/62601             |
-|    |                         | standards, lecture quality, and exams.                       |                                                              |
-+----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
-| 7  | Tia Watts Reviews       | 41 student reviews discussing communication style,           | https://www.ratemyprofessors.com/professor/62602             |
-|    |                         | workload, assignments, and teaching effectiveness.           |                                                              |
-+----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
-| 8  | Glenn Carter Reviews    | 162 student reviews describing course structure, grading,    | https://www.ratemyprofessors.com/professor/25142             |
-|    |                         | exams, engagement, and long-term student experiences.        |                                                              |
-+----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
-| 9  | Shubbhi Taneja Reviews  | 13 student reviews discussing responsiveness, workload,      | https://www.ratemyprofessors.com/professor/2484473           |
-|    |                         | teaching style, and learning outcomes.                       |                                                              |
-+----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
-| 10 | Anamary Leal Reviews    | 11 student reviews focused on assignments, grading,          | https://www.ratemyprofessors.com/professor/2409598           |
-|    |                         | communication, and overall student experience.               |                                                              |
-+----+-------------------------+--------------------------------------------------------------+--------------------------------------------------------------+
+| #  | Source                  | Description                                                                                                   | File                                         |
+| -- | ----------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| 1  | Mark Gondree Reviews    | 24 student reviews covering teaching style, exams, workload, grading, and course experiences.                 | `documents/rmp/mark_gondree_2222240.json`    |
+| 2  | Lynn Stauffer Reviews   | 33 student reviews covering teaching effectiveness, assignments, exams, and overall course satisfaction.      | `documents/rmp/lynn_stauffer_62597.json`     |
+| 3  | Ali Kooshesh Reviews    | 46 student reviews covering lectures, grading practices, course difficulty, and student feedback.             | `documents/rmp/ali_kooshesh_62598.json`      |
+| 4  | Suzanne Rivoire Reviews | 32 student reviews covering workload, teaching quality, exams, and learning outcomes.                         | `documents/rmp/suzanne_rivoire_1213020.json` |
+| 5  | Gurman Gill Reviews     | 23 student reviews covering assignments, classroom experience, and professor accessibility.                   | `documents/rmp/gurman_gill_2083075.json`     |
+| 6  | B. Ravikumar Reviews    | 38 student reviews covering course rigor, grading standards, lecture quality, and exams.                      | `documents/rmp/b_ravikumar_62601.json`       |
+| 7  | Tia Watts Reviews       | 41 student reviews covering communication style, workload, assignments, and teaching effectiveness.           | `documents/rmp/tia_watts_62602.json`         |
+| 8  | Glenn Carter Reviews    | 162 student reviews covering course structure, grading, exams, engagement, and long-term student experiences. | `documents/rmp/glenn_carter_25142.json`      |
+| 9  | Shubbhi Taneja Reviews  | 13 student reviews covering responsiveness, workload, teaching style, and learning outcomes.                  | `documents/rmp/shubbhi_taneja_2484473.json`  |
+| 10 | Anamary Leal Reviews    | 11 student reviews covering assignments, grading, communication, and overall student experience.              | `documents/rmp/anamary_leal_2409598.json`    |
+
 ---
 
 ## Chunking Strategy
 
-The documents in this project are Rate My Professors pages, and the main useful content is made up of short student reviews. Because each review usually represents one complete student opinion, I will split the documents so that each individual review becomes one chunk.
+The raw data was scraped from Rate My Professors and stored as JSON files, with one file per professor and one object per student rating. Because each rating contains a complete student review, each review will be treated as a single chunk.
 
-Chunk size:
+**Chunk size:**
 
-One student review per chunk
+* One student review per chunk (typically 1-5 sentences)
 
-Overlap size:
+**Overlap size:**
 
-0 overlap
+* 0 overlap
 
-This strategy fits the structure of the documents because the reviews are already short and self-contained. Splitting by a fixed character count could cut a review in the middle of an important thought, which would make the chunk harder to understand during retrieval. Combining multiple reviews into one larger chunk could mix different opinions about exams, workload, grading, and teaching style, which would make semantic search less precise.
+This strategy fits the structure of the documents because the reviews are already short and self-contained. Splitting reviews by a fixed character or token count could separate important context and make individual chunks harder to understand. Combining multiple reviews into a larger chunk could mix unrelated opinions about exams, workload, grading, and teaching style, reducing retrieval precision.
 
-Using one review per chunk should make retrieval more targeted. For example, if a user asks about exam difficulty, the system can retrieve specific reviews that mention exams instead of pulling in large sections containing unrelated comments.
+Using one review per chunk should make retrieval more targeted. For example, if a user asks about exam difficulty, the system can retrieve specific reviews discussing exams instead of returning a larger chunk that contains unrelated comments. Each chunk will also retain metadata such as professor name, course number, review date, difficulty rating, and source file to improve retrieval quality and source attribution.
 
 ---
 
@@ -84,34 +61,41 @@ I will retrieve the top 5 most relevant chunks for each user query.
 
 **Production tradeoff reflection:**
 If I were deploying this system for real users and cost was not a constraint, I would compare different embedding models based on accuracy, context length, latency, and cost. A larger embedding model might capture more subtle meaning in student reviews, but it could be slower or more expensive. I would also consider whether the model handles informal student language well, since reviews may include slang, abbreviations, and inconsistent wording.
+
 ---
+
+
 
 ## Evaluation Plan
 
-<!-- List your 5 test questions with their expected correct answers.
-     Questions should be specific enough that you can judge whether the system's response
-     is right or wrong. "What are good dining halls?" is too vague.
-     "What do students say about wait times at [dining hall name] during lunch?" is testable. -->
-
-| # | Question | Expected answer |
+| # | Question | Expected Answer |
 |---|----------|-----------------|
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
-| 5 | | |
+| 1 | What do students commonly say about Glenn Carter's teaching style? | Glenn Carter is frequently described as caring, enthusiastic, helpful, and passionate about teaching. Students often mention that he makes introductory computer science approachable and enjoyable. |
+| 2 | What concerns do students raise about Tia Watts? | Reviews are mixed. Positive reviews praise her knowledge and willingness to help, while negative reviews commonly mention disorganization, slow grading, unclear labs, and arriving late to class. |
+| 3 | What do students say about Ali Kooshesh's courses? | Students consistently describe his courses as challenging and demanding, but also describe him as knowledgeable, fair, and helpful when students seek assistance. |
+| 4 | Which professor receives the strongest praise for being caring and supportive of students? | Mark Gondree and Gurman Gill are frequently described as caring, supportive, accessible, and invested in student success. |
+| 5 | What complaints do students make about Anamary Leal's classes? | Reviews frequently mention unclear instruction, self-teaching requirements, poor communication, grading concerns, and difficulty connecting lectures to labs or assignments. |
 
 ---
 
 ## Anticipated Challenges
 
-<!-- What could go wrong? Name at least two specific risks with reasoning.
-     Consider: noisy or inconsistent documents, missing source attribution, off-topic
-     retrieval, chunks that split key information across boundaries. -->
+1. **Conflicting student opinions**
 
-1.
+   Professor reviews are subjective, and different students often have very different experiences with the same professor. One review may describe a professor as caring and helpful, while another describes the same professor as disorganized or difficult. This could make it difficult for the retrieval and generation system to produce balanced summaries without overemphasizing a small number of reviews.
 
-2.
+2. **Retrieval of irrelevant or incomplete reviews**
+
+   Some reviews are extremely short (for example, "Great professor" or "Terrible teacher") and contain very little context. Semantic search may retrieve these reviews even when longer reviews provide better evidence. This could reduce answer quality and make it harder for the system to generate detailed, grounded responses.
+
+3. **Cross-professor comparison questions**
+
+   Questions such as "Which professor is most supportive?" require information from multiple source documents. The retrieval system may focus too heavily on one professor's reviews and miss relevant evidence from others, leading to incomplete or biased answers.
+
+4. **Source attribution and traceability**
+
+   The system must clearly identify which reviews and documents support each answer. If metadata is not stored correctly during ingestion and retrieval, responses may not be able to provide accurate citations, reducing trustworthiness and making evaluation more difficult.
+
 
 ---
 
