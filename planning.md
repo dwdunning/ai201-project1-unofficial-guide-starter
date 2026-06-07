@@ -100,8 +100,6 @@ If I were deploying this system for real users and cost was not a constraint, I 
 
 ## Architecture
 
-## Architecture
-
 ```text
 ┌─────────────────────┐
 │ Document Ingestion  │
@@ -150,17 +148,162 @@ If I were deploying this system for real users and cost was not a constraint, I 
 
 ## AI Tool Plan
 
-<!-- For each part of the pipeline below, describe:
-     - Which AI tool you plan to use (Claude, Copilot, ChatGPT, etc.)
-     - What you'll give it as input (which sections of this planning.md, which requirements)
-     - What you expect it to produce
-     - How you'll verify the output matches your spec
+For the initial data scraping from ratemyprofessors, 
 
-     "I'll use AI to help me code" is not a plan.
-     "I'll give Claude my Chunking Strategy section and ask it to implement chunk_text()
-     with my specified chunk size and overlap" is a plan. -->
+I asked Claude
+
+"Investigate the Rate My Professors pages for these professors:
+
+Mark Gondree https://www.ratemyprofessors.com/professor/2222240
+Lynn Stauffer https://www.ratemyprofessors.com/professor/62597 
+Ali Kooshesh https://www.ratemyprofessors.com/professor/62598 
+Suzanne Rivoire https://www.ratemyprofessors.com/professor/1213020 
+Gurman Gill https://www.ratemyprofessors.com/professor/2083075 
+B. Ravikumar https://www.ratemyprofessors.com/professor/62601 
+Tia Watts https://www.ratemyprofessors.com/professor/62602 
+Glenn Carter https://www.ratemyprofessors.com/professor/25142 
+Shubbhi Taneja https://www.ratemyprofessors.com/professor/2484473 
+Anamary Leal https://www.ratemyprofessors.com/professor/2409598
+
+Determine whether reviews can be extracted programmatically.
+
+Check:
+1. Whether reviews are embedded in the HTML.
+2. Whether the site uses a GraphQL or REST API.
+3. Whether there is a public endpoint returning review data.
+4. Produce a Python script that downloads all reviews into JSON files if possible.
+
+Do not write the final scraper until you've analyzed the page structure and API calls."
+After we were able to make a working scraper and save all 423 reviews of the 10 professors as json files, I asked Claude to 
+
+"Before writing any code, read:
+
+1. `planning.md`
+2. The JSON files in `documents/rmp/`
+3. The existing repository structure
+
+Your task is to implement only the ingestion and chunking pipeline described in `planning.md`.
+
+Requirements:
+
+* Follow the chunking strategy in `planning.md`.
+* Use one review per chunk.
+* Preserve metadata needed for source attribution.
+* Create a processed chunk dataset suitable for the embedding stage.
+* Print sample chunks for inspection.
+* Report total documents loaded, chunks created, and skipped reviews.
+
+Before writing code:
+
+1. Summarize your understanding of my chunking strategy.
+2. Explain which files you plan to create or modify.
+3. Point out any inconsistencies between the JSON structure and the plan.
+
+Only after that analysis should you implement the ingestion/chunking pipeline.
+"
+
+After confirming that Claude understood my instructions I had it write ingest.py
+After running it I had to add functions to clean the text and normalize course numbers.
+
+lastly I asked it to copy 5 random chunks to a new file to spot check "[
+ 
 
 **Milestone 3 — Ingestion and chunking:**
+
+Loads Rate My Professors JSON files (one per professor), produces one chunk per student review, and saves the dataset to data/processed/chunks.json for Milestone 4.
+
+Chunk schema:
+
+chunk_id — unique identifier:
+<professor_legacyId>_<rating_legacyId>
+text — cleaned student review comment (chunk content)
+professor_name — full name of the professor
+professor_id — RMP legacy ID of the professor
+source_file — JSON filename the review came from
+course — course number from the review (e.g. "CS340")
+date — review submission date string
+difficulty_rating — per-review difficulty score (1–5)
+helpful_rating — per-review helpfulness score (1–5)
+grade — grade the reviewer received ("A", "B+", etc., or "")
+would_take_again — 1 (yes), 0 (no), or null
+rating_tags — tags the reviewer selected """
+
+5 random chunks retrieved for review 
+
+[
+  {
+    "chunk_id": "1213020_31866126",
+    "text": "Extremely disappointed in Rivoire. I can tell she has the potential to be an excellent professor, but her inability to grade anything by the time she promises is rough. She also makes mistakes in labs, missed many classes she had to assign a project a week before finals started. Unorganized and sloppy, but a nice woman.",
+    "professor_name": "Suzanne Rivoire",
+    "professor_id": 1213020,
+    "source_file": "suzanne_rivoire_1213020.json",
+    "course": "CS215",
+    "date": "2019-05-14 04:58:52 +0000 UTC",
+    "difficulty_rating": 3,
+    "helpful_rating": 2,
+    "grade": "B",
+    "would_take_again": 0,
+    "rating_tags": "Skip class? You won't pass."
+  },
+  {
+    "chunk_id": "25142_22757520",
+    "text": "Best Professor ever! I was about to change my major to Comp. Science. He was always energetic and he is very understanding. The class is hard for some, but I thought it was really easy because I did all the reading and studying.",
+    "professor_name": "Glenn Carter",
+    "professor_id": 25142,
+    "source_file": "glenn_carter_25142.json",
+    "course": "CS101",
+    "date": "2014-01-15 17:42:59 +0000 UTC",
+    "difficulty_rating": 1,
+    "helpful_rating": 5,
+    "grade": "",
+    "would_take_again": null,
+    "rating_tags": ""
+  },
+  {
+    "chunk_id": "25142_2098316",
+    "text": "Glenn is an awesome man. He knows he's a computer nerd and he's hilarious. He also knows that computer science is boring and he does his best to make it fun. Like one guy said, go to lecture, and take decent notes, you'll get a good grade",
+    "professor_name": "Glenn Carter",
+    "professor_id": 25142,
+    "source_file": "glenn_carter_25142.json",
+    "course": "CS101",
+    "date": "2004-05-06 02:39:25 +0000 UTC",
+    "difficulty_rating": 2,
+    "helpful_rating": 5,
+    "grade": "",
+    "would_take_again": null,
+    "rating_tags": ""
+  },
+  {
+    "chunk_id": "2083075_27261356",
+    "text": "He is very easy to talk to and truly wants each student to pass his course. Each lecture, he stops and makes sure people understand the material. He likes calling on people and \"test\" them on the material. It's intimidating but very helpful when you're called on and truly lost. He doesn't move on unless you get a clear understanding.",
+    "professor_name": "Gurman Gill",
+    "professor_id": 2083075,
+    "source_file": "gurman_gill_2083075.json",
+    "course": "CS115",
+    "date": "2016-11-28 02:30:56 +0000 UTC",
+    "difficulty_rating": 3,
+    "helpful_rating": 5,
+    "grade": "A-",
+    "would_take_again": 1,
+    "rating_tags": "Gives good feedback--Respected--ACCESSIBLE OUTSIDE CLASS"
+  },
+  {
+    "chunk_id": "62601_21570860",
+    "text": "Very kind but challenging teacher. Much of his lectures are spent by him discussing difficult and hardly related topics. He is very smart, though, and you will learn lots if you go into his office hours.",
+    "professor_name": "B. Ravikumar",
+    "professor_id": 62601,
+    "source_file": "b_ravikumar_62601.json",
+    "course": "CS315",
+    "date": "2013-04-20 17:50:59 +0000 UTC",
+    "difficulty_rating": 5,
+    "helpful_rating": 5,
+    "grade": "",
+    "would_take_again": null,
+    "rating_tags": ""
+  }
+]
+
+
 
 **Milestone 4 — Embedding and retrieval:**
 

@@ -1,0 +1,72 @@
+[
+  {
+    "chunk_id": "1213020_31866126",
+    "text": "Extremely disappointed in Rivoire. I can tell she has the potential to be an excellent professor, but her inability to grade anything by the time she promises is rough. She also makes mistakes in labs, missed many classes she had to assign a project a week before finals started. Unorganized and sloppy, but a nice woman.",
+    "professor_name": "Suzanne Rivoire",
+    "professor_id": 1213020,
+    "source_file": "suzanne_rivoire_1213020.json",
+    "course": "CS215",
+    "date": "2019-05-14 04:58:52 +0000 UTC",
+    "difficulty_rating": 3,
+    "helpful_rating": 2,
+    "grade": "B",
+    "would_take_again": 0,
+    "rating_tags": "Skip class? You won't pass."
+  },
+  {
+    "chunk_id": "25142_22757520",
+    "text": "Best Professor ever! I was about to change my major to Comp. Science. He was always energetic and he is very understanding. The class is hard for some, but I thought it was really easy because I did all the reading and studying.",
+    "professor_name": "Glenn Carter",
+    "professor_id": 25142,
+    "source_file": "glenn_carter_25142.json",
+    "course": "CS101",
+    "date": "2014-01-15 17:42:59 +0000 UTC",
+    "difficulty_rating": 1,
+    "helpful_rating": 5,
+    "grade": "",
+    "would_take_again": null,
+    "rating_tags": ""
+  },
+  {
+    "chunk_id": "25142_2098316",
+    "text": "Glenn is an awesome man. He knows he's a computer nerd and he's hilarious. He also knows that computer science is boring and he does his best to make it fun. Like one guy said, go to lecture, and take decent notes, you'll get a good grade",
+    "professor_name": "Glenn Carter",
+    "professor_id": 25142,
+    "source_file": "glenn_carter_25142.json",
+    "course": "CS101",
+    "date": "2004-05-06 02:39:25 +0000 UTC",
+    "difficulty_rating": 2,
+    "helpful_rating": 5,
+    "grade": "",
+    "would_take_again": null,
+    "rating_tags": ""
+  },
+  {
+    "chunk_id": "2083075_27261356",
+    "text": "He is very easy to talk to and truly wants each student to pass his course. Each lecture, he stops and makes sure people understand the material. He likes calling on people and \"test\" them on the material. It's intimidating but very helpful when you're called on and truly lost. He doesn't move on unless you get a clear understanding.",
+    "professor_name": "Gurman Gill",
+    "professor_id": 2083075,
+    "source_file": "gurman_gill_2083075.json",
+    "course": "CS115",
+    "date": "2016-11-28 02:30:56 +0000 UTC",
+    "difficulty_rating": 3,
+    "helpful_rating": 5,
+    "grade": "A-",
+    "would_take_again": 1,
+    "rating_tags": "Gives good feedback--Respected--ACCESSIBLE OUTSIDE CLASS"
+  },
+  {
+    "chunk_id": "62601_21570860",
+    "text": "Very kind but challenging teacher. Much of his lectures are spent by him discussing difficult and hardly related topics. He is very smart, though, and you will learn lots if you go into his office hours.",
+    "professor_name": "B. Ravikumar",
+    "professor_id": 62601,
+    "source_file": "b_ravikumar_62601.json",
+    "course": "CS315",
+    "date": "2013-04-20 17:50:59 +0000 UTC",
+    "difficulty_rating": 5,
+    "helpful_rating": 5,
+    "grade": "",
+    "would_take_again": null,
+    "rating_tags": ""
+  }
+]
