@@ -205,7 +205,7 @@ Only after that analysis should you implement the ingestion/chunking pipeline.
 After confirming that Claude understood my instructions I had it write ingest.py
 After running it I had to add functions to clean the text and normalize course numbers.
 
-lastly I asked it to copy 5 random chunks to a new file to spot check "[
+lastly I asked it to copy 5 random chunks to a new file to spot check.
  
 
 **Milestone 3 — Ingestion and chunking:**
