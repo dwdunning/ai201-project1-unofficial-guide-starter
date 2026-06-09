@@ -174,6 +174,22 @@ Because citations come directly from retrieval metadata, the system avoids hallu
 
 The evaluation table reflects the initial semantic-only retrieval tests used during development. Later iterations improved retrieval quality through metadata filtering.
 
+Additional Limitation Observed During Testing
+
+Question: Which professor is most liked?
+
+Expected behavior: The system should recognize that determining the most liked professor requires comparing reviews across the entire corpus and either perform a corpus-wide analysis or refuse to make a definitive ranking.
+
+System response: The system identified Glenn Carter as the most liked professor based on the retrieved reviews.
+
+Retrieval quality: Relevant
+
+Response accuracy: Partially Accurate
+
+Analysis: The retrieved reviews were highly positive and primarily associated with Glenn Carter, so the answer was grounded in the retrieved evidence. However, the system only considered a small subset of reviews returned by retrieval rather than analyzing all 423 reviews in the corpus. As a result, it overgeneralized from the retrieved evidence and made a corpus-wide ranking claim that was not fully supported by the available context.
+
+This highlights a limitation of retrieval-based systems when answering aggregate questions. A future improvement would be to add a separate analytics layer capable of computing statistics across the entire corpus rather than relying exclusively on top-k retrieval.
+
 **Retrieval quality:** Relevant / Partially relevant / Off-target  
 **Response accuracy:** Accurate / Partially accurate / Inaccurate
 
@@ -200,6 +216,27 @@ This was not a chunking failure because the chunks were complete student reviews
 I added metadata filtering by professor name and course number before semantic search. When a query includes a known professor or course, the system now filters the ChromaDB search space before ranking by embedding similarity. For example, the Tia Watts CS215 query is filtered to reviews where `professor_name = "Tia Watts"` and `course = "CS215"`.
 
 This improved precision because semantic search now runs only within the relevant subset of documents. A future improvement would be to make the metadata extraction more robust, such as handling nicknames, misspellings, and alternate course formats.
+
+**Question that failed:**
+
+Which professor is most liked?
+
+**What the system returned:**
+
+The system answered that Glenn Carter was the most liked professor and cited several highly positive reviews describing him as a favorite professor, an excellent teacher, and someone who made computer science engaging and approachable.
+
+**Root cause (tied to a specific pipeline stage):**
+
+The failure occurred primarily in the generation stage, with some contribution from the retrieval strategy. The retrieval system searched the entire corpus of 423 review chunks, but it only returned the top few chunks that were most semantically similar to the query. Because those retrieved reviews were overwhelmingly positive and mostly associated with Glenn Carter, the LLM generalized from the retrieved evidence and concluded that he was the most liked professor overall.
+
+The problem is that the question requires a corpus-wide comparison across all professors, but the RAG pipeline only provides the model with a small subset of retrieved reviews. The retrieved reviews supported the claim that Glenn Carter was highly regarded, but they did not provide enough evidence to determine whether he was the most liked professor in the entire dataset.
+
+This was not a chunking failure because the retrieved chunks were complete reviews. It was also not a retrieval failure because the retrieved reviews were relevant to the query. Instead, the limitation came from using a retrieval-based system to answer a question that requires aggregate analysis of the full corpus.
+
+**What you would change to fix it:**
+
+I would add a separate analytics layer for ranking and aggregation questions. Instead of relying on semantic retrieval, the system could analyze all reviews for each professor and compute statistics such as average rating, number of positive reviews, or sentiment scores. The query could then be routed to either the retrieval pipeline or the analytics pipeline depending on whether the user is asking for a summary of reviews or a corpus-wide comparison.
+
 
 ---
 
